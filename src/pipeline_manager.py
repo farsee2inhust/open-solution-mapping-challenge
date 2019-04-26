@@ -78,31 +78,42 @@ def prepare_metadata(train_data, valid_data, test_data, public_paths, logger, pa
     meta.to_csv(metadata_filepath, index=None)
 
 
+# 训练
+# pipeline_name：名称，决定处理方式
+# dev_mode：开发模式（少数样本，调程序用？）
+# logger：记录
+# params：存放参数
+# seed：种子
+
 def train(pipeline_name, dev_mode, logger, params, seed):
+    # 初始化日志
     logger.info('training')
+    # 清空实验目录
     if bool(params.overwrite) and os.path.isdir(params.experiment_dir):
         shutil.rmtree(params.experiment_dir)
-
+    # 读取meta数据
     meta = pd.read_csv(os.path.join(params.meta_dir, 'stage{}_metadata.csv'.format(params.competition_stage)),
                        low_memory=False)
+    # 提取训练数据信息和验证数据信息
     meta_train = meta[meta['is_train'] == 1]
     meta_valid = meta[meta['is_valid'] == 1]
-
+    # 打开训练模式
     train_mode = True
-
+    # 所有验证数据集中抽取一部分作为验证数据集
     meta_valid = meta_valid.sample(int(params.evaluation_data_sample), random_state=seed)
-
+    # 开发模式
     if dev_mode:
         meta_train = meta_train.sample(20, random_state=seed)
         meta_valid = meta_valid.sample(10, random_state=seed)
-
+    # 评分模型 TODO 详细看
     if pipeline_name == 'scoring_model':
         train_mode = False
         meta_train, annotations = _get_scoring_model_data(params.data_dir, meta_train,
                                                           params.scoring_model__num_training_examples, seed)
     else:
+        # 标签置空
         annotations = None
-
+    # 构建数据格式
     data = {'input': {'meta': meta_train,
                       'target_sizes': [(300, 300)] * len(meta_train),
                       'annotations': annotations},
@@ -110,7 +121,7 @@ def train(pipeline_name, dev_mode, logger, params, seed):
                       'num_threads': params.num_threads},
             'callback_input': {'meta_valid': meta_valid}
             }
-
+    # 开始处理
     pipeline = PIPELINES[pipeline_name]['train'](SOLUTION_CONFIG)
     pipeline.clean_cache()
     pipeline.fit_transform(data)

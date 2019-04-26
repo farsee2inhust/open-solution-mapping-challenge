@@ -13,8 +13,9 @@ def unet(config, train_mode):
     save_output = False
     load_saved_output = False
 
+    # TODO
     make_apply_transformer_ = make_apply_transformer_stream if config.execution.stream_mode else make_apply_transformer
-
+    # 载入器
     loader = preprocessing_generator(config, is_train=train_mode)
     unet = Step(name='unet',
                 transformer=PyTorchUNetStream(**config.unet) if config.execution.stream_mode
@@ -39,6 +40,7 @@ def unet(config, train_mode):
 
 
 def unet_weighted(config, train_mode):
+    # 载入unet框架
     unet_weighted = unet(config, train_mode)
     if config.execution.loader_mode == 'crop_and_pad':
         Loader = loaders.MetadataImageSegmentationLoaderDistancesCropPad
@@ -157,8 +159,10 @@ def unet_tta(config):
 
 def preprocessing_generator(config, is_train):
     if config.execution.loader_mode == 'crop_and_pad':
+        # 裁剪+填补
         Loader = loaders.MetadataImageSegmentationLoaderCropPad
     elif config.execution.loader_mode == 'resize':
+        # 调整大小
         Loader = loaders.MetadataImageSegmentationLoaderResize
     else:
         raise NotImplementedError('only crop_and_pad and resize options available')
@@ -391,6 +395,22 @@ def scoring_model_inference(config, input_pipeline):
 
     return output
 
+#######################
+# unet
+#
+# unet_weighted 加权的unet
+#
+# unet_tta TODO
+#
+# unet_padded TODO
+#
+# scoring_model TODO
+#
+# unet_scoring_model TODO
+#
+# unet_padded_scoring_model TODO
+#
+# unet_tta_scoring_model TODO
 
 PIPELINES = {'unet': {'train': partial(unet, train_mode=True),
                       'inference': partial(unet, train_mode=False),

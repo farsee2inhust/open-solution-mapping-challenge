@@ -174,7 +174,9 @@ class MetadataImageSegmentationDatasetDistances(Dataset):
 
 
 class ImageSegmentationLoaderBasic(BaseTransformer):
+    # 图像分割载入基类
     def __init__(self, loader_params, dataset_params):
+        # 初始化操作
         super().__init__()
         self.loader_params = AttrDict(loader_params)
         self.dataset_params = AttrDict(dataset_params)
@@ -266,10 +268,11 @@ class MetadataImageSegmentationLoaderDistancesResize(ImageSegmentationLoaderBasi
 class MetadataImageSegmentationLoaderCropPad(ImageSegmentationLoaderBasic):
     def __init__(self, loader_params, dataset_params):
         super().__init__(loader_params, dataset_params)
-
+        # 图片转换 toTensor和标准化
         self.image_transform = transforms.Compose([transforms.ToTensor(),
                                                    transforms.Normalize(mean=MEAN, std=STD),
                                                    ])
+        # 转换成黑白 然后 toTensor
         self.mask_transform = transforms.Compose([transforms.Lambda(to_monochrome),
                                                   transforms.Lambda(to_tensor),
                                                   ])

@@ -252,6 +252,7 @@ class Step:
 
 
 class BaseTransformer:
+    # 基础变换类
     def fit(self, *args, **kwargs):
         return self
 
