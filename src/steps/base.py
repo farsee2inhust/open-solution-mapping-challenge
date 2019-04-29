@@ -260,6 +260,7 @@ class BaseTransformer:
         return NotImplementedError
 
     def fit_transform(self, *args, **kwargs):
+        # fit + transform
         self.fit(*args, **kwargs)
         return self.transform(*args, **kwargs)
 
